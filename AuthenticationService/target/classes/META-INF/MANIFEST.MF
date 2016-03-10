@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Implementation-Vendor: Pivotal Software, Inc.
+Implementation-Title: SpringRestSample
+Implementation-Version: 0.0.1-SNAPSHOT
+Implementation-Vendor-Id: com.ezdi
+Build-Jdk: 1.7.0_91
+Built-By: parth
+Created-By: Maven Integration for Eclipse
+
