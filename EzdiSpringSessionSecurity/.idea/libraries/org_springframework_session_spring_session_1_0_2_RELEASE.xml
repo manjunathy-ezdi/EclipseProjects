@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="org.springframework.session:spring-session:1.0.2.RELEASE" type="repository">
+    <properties maven-id="org.springframework.session:spring-session:1.0.2.RELEASE" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/springframework/session/spring-session/1.0.2.RELEASE/spring-session-1.0.2.RELEASE.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/javax/servlet/javax.servlet-api/3.0.1/javax.servlet-api-3.0.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
