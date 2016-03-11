@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan
 @EnableAutoConfiguration
 public class Application {
+	
+	public static int MAX_LOGIN_ATTEMPTS=3;
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);

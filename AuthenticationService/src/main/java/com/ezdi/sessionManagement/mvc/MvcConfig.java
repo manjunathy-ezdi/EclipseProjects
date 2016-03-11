@@ -15,7 +15,7 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
 	 public DriverManagerDataSource dataSource() {
 	     DriverManagerDataSource driverManagerDataSource = new DriverManagerDataSource();
 	     driverManagerDataSource.setDriverClassName("com.mysql.jdbc.Driver");
-	     driverManagerDataSource.setUrl("jdbc:mysql://localhost:3306/userSessionManagement");
+	     driverManagerDataSource.setUrl("jdbc:mysql://localhost:3306/ezdiUserSessionManagement");
 	     driverManagerDataSource.setUsername("root");
 	     driverManagerDataSource.setPassword("P@ssw0rd@123");
 	     return driverManagerDataSource;
