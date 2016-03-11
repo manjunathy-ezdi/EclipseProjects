@@ -2,6 +2,7 @@ package com.ezdi.sessionManagement.config;
 
 import java.util.Properties;
 
+import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 import org.hibernate.SessionFactory;
@@ -13,6 +14,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.savedrequest.NullRequestCache;
 
 import com.ezdi.sessionManagement.db.dao.UsersSaver;
@@ -56,15 +58,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		UsersService ret = new UsersServiceImpl();
 		return ret;
 	}
-
+	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests().anyRequest().authenticated().and().requestCache().requestCache(new NullRequestCache())
 				.and().httpBasic();
 	}
+	
 	@Autowired
 	DataSource dataSource;
-
+	
+	@Resource(name="userDetailsService")
+	UserDetailsService userDetailsService;
+	
 	@Autowired
 	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
 

@@ -8,6 +8,7 @@ import com.ezdi.sessionManagement.db.dao.UsersSaver;
 import com.ezdi.sessionManagement.db.model.EzdiUser;
 import com.ezdi.sessionManagement.service.UsersService;
 
+//@Service("usersService")
 public class UsersServiceImpl implements UsersService{
 	
 	/*

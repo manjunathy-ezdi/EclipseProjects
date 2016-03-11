@@ -8,22 +8,20 @@ import com.ezdi.sessionManagement.service.UsersService;
 
 public class EzdiAuthenticationFailureEventListener implements ApplicationListener<AuthenticationFailureBadCredentialsEvent>{
 
+	@Autowired
 	private UsersService usersService;
 	
 	public UsersService getUsersService() {
 		return usersService;
 	}
 
-	@Autowired
+	
 	public void setUsersService(UsersService usersService) {
 		this.usersService = usersService;
 	}
 
 	public void onApplicationEvent(AuthenticationFailureBadCredentialsEvent event) {
 		String username = event.getAuthentication().getName();
-		boolean isLocked = usersService.checkAndIncrementLoginAttempts(username);
-	}
-
-	
-		
+		boolean isLocked = usersService.checkAndIncrementLoginAttempts(username);		
+	}		
 }

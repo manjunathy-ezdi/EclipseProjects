@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -17,6 +19,15 @@ import com.ezdi.sessionManagement.db.model.EzdiUser;
 
 @Service("userDetailsService")
 public class EzdiUserDetailsService extends JdbcUserDetailsManager{
+	
+	public static final String AUTHORITIES_QUERY_STRING="select username, role from user_roles where username=?"; 
+	
+	@Autowired
+	public EzdiUserDetailsService(DataSource dataSource){
+		super();
+		setAuthoritiesByUsernameQuery(AUTHORITIES_QUERY_STRING);
+		setDataSource(dataSource);
+	}
 
 	private UsersService usersService;
 	
@@ -28,7 +39,7 @@ public class EzdiUserDetailsService extends JdbcUserDetailsManager{
 	public void setUsersService(UsersService usersService) {
 		this.usersService = usersService;
 	}
-
+	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		EzdiUser user = usersService.getUserByUsername(username);
@@ -43,7 +54,7 @@ public class EzdiUserDetailsService extends JdbcUserDetailsManager{
 		else{
 			authList = null;
 		}
-		UserDetails userDetails = new User(user.getUsername(),user.getPassword(),user.isEnabled(),true,true,user.isLocked(),authList);
+		UserDetails userDetails = new User(user.getUsername(),user.getPassword(),user.isEnabled(),true,true,!(user.isLocked()),authList);
 		return userDetails;
 	}
 }
