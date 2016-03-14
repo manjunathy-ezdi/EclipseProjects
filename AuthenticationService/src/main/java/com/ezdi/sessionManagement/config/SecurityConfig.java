@@ -15,16 +15,29 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.savedrequest.NullRequestCache;
 
 import com.ezdi.sessionManagement.db.dao.UsersSaver;
 import com.ezdi.sessionManagement.db.dao.implementation.UsersSaverImpl;
 import com.ezdi.sessionManagement.db.model.EzdiUser;
+import com.ezdi.sessionManagement.event.listener.EzdiAuthenticationFailureEventListener;
+import com.ezdi.sessionManagement.filter.security.EzdiSecurityFilter;
 import com.ezdi.sessionManagement.service.UsersService;
 import com.ezdi.sessionManagement.service.impl.UsersServiceImpl;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+	
+	@Bean
+	public EzdiAuthenticationFailureEventListener ezdiAuthenticationFailureEventListener(){
+		return new EzdiAuthenticationFailureEventListener();
+	}
+	
+	@Bean
+	public EzdiSecurityFilter ezdiFilter(){
+		return new EzdiSecurityFilter();
+	}
 	
 	@Bean
     public SessionFactory sessionFactory(DataSource dataSource){
@@ -63,6 +76,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests().anyRequest().authenticated().and().requestCache().requestCache(new NullRequestCache())
 				.and().httpBasic();
+		http.addFilterAfter(ezdiFilter(), LogoutFilter.class);
 	}
 	
 	@Autowired

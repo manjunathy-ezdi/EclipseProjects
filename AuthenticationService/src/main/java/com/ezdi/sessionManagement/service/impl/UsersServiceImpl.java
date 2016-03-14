@@ -1,5 +1,7 @@
 package com.ezdi.sessionManagement.service.impl;
 
+import java.util.Calendar;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
@@ -7,6 +9,7 @@ import com.ezdi.sessionManagement.Application;
 import com.ezdi.sessionManagement.db.dao.UsersSaver;
 import com.ezdi.sessionManagement.db.model.EzdiUser;
 import com.ezdi.sessionManagement.service.UsersService;
+import com.ezdi.sessionManagement.util.DateUtil;
 
 //@Service("usersService")
 public class UsersServiceImpl implements UsersService{
@@ -34,24 +37,25 @@ public class UsersServiceImpl implements UsersService{
 			throw new UsernameNotFoundException("User "+username+" does not exist.");
 		}
 		int attempts = user.getLoginAttempts()+1;
+		user.setLastFailedLoginAttemptDate(Calendar.getInstance().getTime());
+		user.setLoginAttempts(attempts);
 		if(attempts == Application.MAX_LOGIN_ATTEMPTS){
-			user.setLoginAttempts(0);
-			user.setEnabled(false);
-			usersSaver.save(user);
-			return false;
+			user.setLocked(true);
 		}
-		else{
-			user.setLoginAttempts(attempts);
-			usersSaver.save(user);
-			return true;
-		}
+		usersSaver.save(user);
+		return !user.isLocked();
 	}
-
-	public void resetLoginAttempts(String username) throws UsernameNotFoundException {
+	
+	public void resetLockedUser(String username) throws UsernameNotFoundException{
 		EzdiUser user = usersSaver.getByUsername(username);
+		resetLockedUser(user);
+	}
+	
+	public void resetLockedUser(EzdiUser user) throws UsernameNotFoundException{
 		if(user == null){
-			throw new UsernameNotFoundException("User "+username+" does not exist.");
+			throw new UsernameNotFoundException("User does not exist.");
 		}
+		user.setLocked(false);
 		user.setLoginAttempts(0);
 		usersSaver.save(user);
 	}
@@ -61,7 +65,18 @@ public class UsersServiceImpl implements UsersService{
 		if(ezdiUser == null){
 			throw new UsernameNotFoundException("User "+username+" does not exist.");
 		}
+		ezdiUser = processUserBeforeProgressing(ezdiUser);
 		return ezdiUser;
 	}
-
+	
+	private EzdiUser processUserBeforeProgressing(EzdiUser ezdiUser) {
+		if(ezdiUser == null) return null;
+		if(ezdiUser.isLocked()){
+			double hoursSinceLastLoginAttempt = DateUtil.differenceInHours(Calendar.getInstance().getTime(), ezdiUser.getLastFailedLoginAttemptDate());
+			if(hoursSinceLastLoginAttempt > Application.MAX_USERACCOUNT_LOCKED_TIME_IN_HOURS){
+				resetLockedUser(ezdiUser);
+			}
+		}
+		return ezdiUser;
+	}
 }

@@ -8,6 +8,6 @@ public interface UsersService {
 	
 	public EzdiUser getUserByUsername(String username) throws UsernameNotFoundException;
 	public boolean checkAndIncrementLoginAttempts(String username) throws UsernameNotFoundException;
-	public void resetLoginAttempts(String username) throws UsernameNotFoundException;
-	
+	public void resetLockedUser(EzdiUser user) throws UsernameNotFoundException;
+	public void resetLockedUser(String username) throws UsernameNotFoundException;
 }

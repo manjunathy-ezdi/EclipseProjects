@@ -1,5 +1,7 @@
 package com.ezdi.sessionManagement.db.model;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -24,6 +26,17 @@ public class EzdiUser {
 	
 	@Column
 	private boolean locked;
+	
+	@Column
+	private Date lastFailedLoginAttemptDate;
+
+	public Date getLastFailedLoginAttemptDate() {
+		return lastFailedLoginAttemptDate;
+	}
+
+	public void setLastFailedLoginAttemptDate(Date lastLoginAttemptDate) {
+		this.lastFailedLoginAttemptDate = lastLoginAttemptDate;
+	}
 
 	public boolean isLocked() {
 		return locked;
