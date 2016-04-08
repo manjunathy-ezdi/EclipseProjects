@@ -24,9 +24,6 @@ public class HttpSessionConfig {
 
 	@Value("${redis.port}")
 	private int redisPort;
-	
-	@Value("${redis.session.timeout}")
-	private int sessionTimeOutInMinutes;
 
 	@Bean
 	public JedisConnectionFactory connectionFactory() {
@@ -44,17 +41,4 @@ public class HttpSessionConfig {
 		LOGGER.info("#$#HttpSessionConfig:httpSessionStrategy");
 		return new HeaderHttpSessionStrategy();
 	}
-	
-	@Primary
-	@Bean 
-	public RedisOperationsSessionRepository redisOperationsSessionRepository(){
-		RedisOperationsSessionRepository redisOperationsSessionRepository =  new RedisOperationsSessionRepository(connectionFactory());
-		redisOperationsSessionRepository.setDefaultMaxInactiveInterval(sessionTimeOutInMinutes*60);
-		return redisOperationsSessionRepository;
-	}
-
-	public int getSessionTimeOutInMinutes() {
-		return sessionTimeOutInMinutes;
-	}
-	
 }

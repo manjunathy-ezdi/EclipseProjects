@@ -1,44 +1,78 @@
 package com.ezdi.userdetailsmgmt.config;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.ezdi.userdetailsmgmt.authprovider.impl.EzdiCustomUsernamePasswordAuthenticationProviderImpl;
+import com.ezdi.userdetailsmgmt.filter.EzdiCustomRoleReplacementFilter;
 
 
-
-@EnableWebSecurity
+@Configuration
+@EnableGlobalMethodSecurity(prePostEnabled=true)
+@EnableGlobalAuthentication
 @Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests()
+		http
+		//.httpBasic().disable()
+		.authorizeRequests()//.anyRequest().authenticated();
 		.antMatchers("/user/add**").hasAuthority("ROLE_ADD_PERMISSION")
 		.antMatchers(HttpMethod.POST,"/user/edit**").hasAnyAuthority("ROLE_ADD_PERMISSION","ROLE_EDIT_PERMISSION")
-		.antMatchers(HttpMethod.DELETE, "/user**").hasAuthority("ROLE_DELETE_PERMISSION")
-		.antMatchers(HttpMethod.GET,"/user**").hasAnyAuthority("ROLE_READ_PERMISSION")
-		.anyRequest().authenticated();
+		.antMatchers(HttpMethod.DELETE, "/user/user**").hasAuthority("ROLE_DELETE_PERMISSION")
+		.antMatchers(HttpMethod.GET,"/user/user**").hasAnyAuthority("ROLE_READ_PERMISSION")
+		.antMatchers("/user/me").permitAll()
+		.anyRequest().authenticated()
+		.and()
+		.addFilterBefore(ezdiCustomRoleFilter(), UsernamePasswordAuthenticationFilter.class);
+		//.authenticationProvider(ezdiAuthenticationProvider())
+		
+		//http.addFilterBefore(ezdiCustomFilter, BasicAuthenticationFilter.class);
+		//http.addFilterBefore(ezdiCustomFilter, UsernamePasswordAuthenticationFilter.class);
+		//http.addFilterAfter(ezdiCustomFilter, UsernamePasswordAuthenticationFilter.class);
 	}
 	
+	/*
+	@Bean
+	public EzdiCustomFilter ezdiCustomFilter(){
+		return new EzdiCustomFilter();
+	}
+	*/
+	
+	@Bean
+	public EzdiCustomRoleReplacementFilter ezdiCustomRoleFilter(){
+		return new EzdiCustomRoleReplacementFilter();
+	}
 	
 
 	private static final Logger LOGGER = Logger.getLogger(SecurityConfig.class);
 	
 
-	/*
 	@Autowired
-	public void configureGlobalSecurity(AuthenticationManagerBuilder auth)
+	protected void configureGlobal(AuthenticationManagerBuilder auth)
 			throws Exception {
 		LOGGER.info("Inside configureGlobalSecurity()");
-		auth.userDetailsService(userDetailsService)
-		.passwordEncoder(bCryptPasswordEncoder());
+		auth.authenticationProvider(ezdiAuthenticationProvider());
 		LOGGER.info("Exiting configureGlobalSecurity()");
 	}
-	*/
+	
+	@Bean
+	public AuthenticationProvider ezdiAuthenticationProvider(){
+		return new EzdiCustomUsernamePasswordAuthenticationProviderImpl();
+	}
 
 	/*
 	@Override

@@ -16,7 +16,7 @@ public class EzdiCustomUsernamePasswordAuthenticationProviderImpl extends EzdiCu
 	
 	@Override
 	protected List<String> listOfAuthorities(String roleName, long hospitalId, long locationId) {
-		Role role = roleRepository.findByUsername(roleName);
+		Role role = roleRepository.findByName(roleName);
 		List<String> permitlist = new ArrayList<>();
 		if(role.isAddPermission()){
 			permitlist.add("ROLE_ADD_PERMISSION");

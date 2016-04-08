@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableAutoConfiguration
 @SpringBootApplication
-@ComponentScan(basePackages={"com.ezdi.sessionMgmt.*"})
+@ComponentScan(basePackages={"com.ezdi.userdetailsmgmt.*"})
 public class UserDetailsMgmtApplication {
 	private static final Logger LOGGER = Logger.getLogger(UserDetailsMgmtApplication.class);
 	public static void main(String[] args) {
