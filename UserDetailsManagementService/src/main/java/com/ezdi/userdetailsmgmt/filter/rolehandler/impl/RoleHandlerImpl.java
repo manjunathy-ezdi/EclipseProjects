@@ -11,6 +11,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Component;
 
 import com.ezdi.userdetailsmgmt.UserDetailsMgmtApplication;
@@ -19,8 +21,7 @@ import com.ezdi.userdetailsmgmt.persistence.Role;
 import com.ezdi.userdetailsmgmt.repository.RoleRepository;
 
 
-@Component
-public class RoleHandlerImpl implements RoleHandler {
+public abstract class RoleHandlerImpl implements RoleHandler {
 	
 	
 	public RoleHandlerImpl() {
@@ -31,12 +32,9 @@ public class RoleHandlerImpl implements RoleHandler {
 		//newRoles = new HashSet<GrantedAuthority>();
 	}
 	
-	@Autowired
-	private RoleRepository roleRepository;
+	private SecurityContext originalSecurityContext;
 	
-	private Authentication originalAuth;
-	
-	private Authentication newAuth;
+	private SecurityContext newSecurityContext;
 	
 	public String getRoleAttribute(){
 		return ROLE_ATTRIBUTE_PREFIX+UserDetailsMgmtApplication.MICROSERVICE_ID;
@@ -46,88 +44,111 @@ public class RoleHandlerImpl implements RoleHandler {
 	 * SETTING NEW ROLES
 	 */
 	
-	private boolean replaceBySessionAttribute(SecurityContext sc, HttpSession session){
-		if(sc != null && session != null){
-			Collection<GrantedAuthority> newRoles = (Collection<GrantedAuthority>) session.getAttribute(getRoleAttribute());
-			if(newRoles!= null && !newRoles.isEmpty()){
-				makeNewAuth(newRoles);
-				sc.setAuthentication(newAuth);
-				return true;
-			}
+	private Collection<GrantedAuthority> getAuthoritiesBySessionAttribute(HttpSession session){
+		if(session != null){
+			return (Collection<GrantedAuthority>) session.getAttribute(getRoleAttribute());
 		}
-		return false;
+		return null;
+	}
+	
+	protected SecurityContext createNewSecurityContext(Authentication auth){
+		SecurityContextImpl ret = new SecurityContextImpl();
+		ret.setAuthentication(auth);
+		return ret;
+	}
+	
+	protected SecurityContext getSecurityContext(){
+		return SecurityContextHolder.getContext();
+	}
+	
+	protected void setSecurityContext(SecurityContext sc){
+		SecurityContextHolder.setContext(sc);
 	}
 	
 	@Override
-	public void replaceWithNewRoles(SecurityContext sc, HttpSession session){
-		if(sc != null && session != null){
-			originalAuth = sc.getAuthentication();
-			if(replaceBySessionAttribute(sc, session)){}
-			else{
-				replaceByRepository(sc,session);
+	public void replaceWithNewRoles(HttpSession session){
+		originalSecurityContext = getSecurityContext();
+		if(originalSecurityContext != null && session != null){
+			Collection<GrantedAuthority> newRoles = getAuthoritiesBySessionAttribute(session);
+			if(newRoles == null || newRoles.isEmpty()){
+				newRoles = getAuthoritiesByRepository(session);
 			}
+			createAndSetNewSecurityContext(newRoles);
 		}
 	}
 	
-	private void makeNewAuth(Collection<GrantedAuthority> newRoles){
-		newAuth = new UsernamePasswordAuthenticationToken(originalAuth.getPrincipal(), originalAuth.getCredentials(), newRoles);
-	}
-	
-	private boolean replaceByRepository(SecurityContext sc, HttpSession session){
-		if(sc != null && session != null && originalAuth != null){
-			Collection<? extends GrantedAuthority> originalRoles = originalAuth.getAuthorities();
-			Collection<GrantedAuthority> newRoles = new HashSet<GrantedAuthority>();
-			if(originalRoles != null && !originalRoles.isEmpty()){
-				for(GrantedAuthority each: originalRoles){
-					newRoles.addAll(setOfAuthorities(each.getAuthority()));
-				}
-				makeNewAuth(newRoles);
-				sc.setAuthentication(newAuth);
+	private boolean createAndSetNewSecurityContext(Collection<GrantedAuthority> newRoles){
+		if(originalSecurityContext != null){
+			Authentication originalAuth = originalSecurityContext.getAuthentication();
+			if(originalAuth != null){
+				Authentication newAuth = new UsernamePasswordAuthenticationToken(originalAuth.getPrincipal(), originalAuth.getCredentials(), newRoles);
+				newSecurityContext = createNewSecurityContext(newAuth);
+				setSecurityContext(newSecurityContext);
 				return true;
 			}
 		}
 		return false;
 	}
 	
-
-	private Collection<SimpleGrantedAuthority> setOfAuthorities(String roleName) {
-		Role role = roleRepository.findByName(roleName);
-		Collection<SimpleGrantedAuthority> permitlist = new HashSet<SimpleGrantedAuthority>();
-		if(role.isAddPermission()){
-			permitlist.add(new SimpleGrantedAuthority("ROLE_ADD_PERMISSION"));
+	private Collection<GrantedAuthority> getAuthoritiesByRepository(HttpSession session){
+		Authentication originalAuth;
+		Collection<GrantedAuthority> newRoles = new HashSet<GrantedAuthority>();
+		if(session != null && originalSecurityContext != null && (originalAuth = originalSecurityContext.getAuthentication())!=null){
+			Collection<? extends GrantedAuthority> originalRoles = originalAuth.getAuthorities();
+			if(originalRoles != null && !originalRoles.isEmpty()){
+				for(GrantedAuthority each: originalRoles){
+					newRoles.addAll(setOfNewAuthorities(each.getAuthority()));
+				}
+			}
 		}
-		if(role.isEditPermission()){
-			permitlist.add(new SimpleGrantedAuthority("ROLE_EDIT_PERMISSION"));
-		}
-		if(role.isDeletePermission()){
-			permitlist.add(new SimpleGrantedAuthority("ROLE_DELETE_PERMISSION"));
-		}
-		if(role.isReadPermission()){
-			permitlist.add(new SimpleGrantedAuthority("ROLE_READ_PERMISSION"));
-		}
-		return permitlist;
+		return newRoles;
 	}
+	
+
+	protected Collection<SimpleGrantedAuthority> setOfNewAuthorities(String roleName) {
+		Collection<String> roleList = getRoles(roleName);
+		Collection<SimpleGrantedAuthority> authorities = new HashSet<SimpleGrantedAuthority>();
+		if(roleList != null){
+			for(String each: roleList){
+				authorities.add(new SimpleGrantedAuthority(each));
+			}
+		}
+		return authorities;
+	}
+	
+	protected abstract Collection<String> getRoles(String roleName);
 	
 	
 	/*
 	 * SETTING BACK OLD ROLES
 	 */
 	
-	private void updateMicroserviceRoles(SecurityContext sc, HttpSession session){
-		if(sc != null && session != null){
-			if(newAuth != null){
-				session.setAttribute(getRoleAttribute(), newAuth.getAuthorities());
+	private void updateMicroserviceRoles(HttpSession session){
+		Authentication newAuth;
+		if(newSecurityContext != null && session != null && (newAuth=newSecurityContext.getAuthentication())!=null){
+			session.setAttribute(getRoleAttribute(), newAuth.getAuthorities());
+		}
+	}
+	
+	
+	
+	private void revertRoles(){
+		SecurityContext sc = getSecurityContext();
+		Authentication auth = sc.getAuthentication();
+		if(originalSecurityContext.getAuthentication() != null){
+			if(auth != null){
+				UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(auth.getPrincipal(), auth.getCredentials(), originalSecurityContext.getAuthentication().getAuthorities());
+				newAuth.setDetails(auth.getDetails());
+				sc.setAuthentication(newAuth);
 			}
 		}
 	}
 	
 	
 	@Override
-	public void replaceWithOldRoles(SecurityContext sc, HttpSession session){
-		if(sc != null && session != null){
-			sc.setAuthentication(originalAuth);
-			updateMicroserviceRoles(sc, session);
-			newAuth = null;
-		}
+	public void replaceWithOldRoles(HttpSession session){
+		updateMicroserviceRoles(session);
+		revertRoles();
+		session.setAttribute(RoleHandler.REDIS_SPRING_SESSION_SECURITY_KEY, getSecurityContext());
 	}
 }

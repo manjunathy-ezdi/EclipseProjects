@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 
@@ -39,7 +40,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		.anyRequest().authenticated()
 		.and()
 		//.addFilterBefore(ezdiCustomRoleFilter(), UsernamePasswordAuthenticationFilter.class);
-		.addFilterAfter(ezdiCustomRoleFilter(), SwitchUserFilter.class)
+		//.addFilterAfter(ezdiCustomRoleFilter(), SwitchUserFilter.class)
+		.addFilterBefore(ezdiCustomRoleFilter(), AnonymousAuthenticationFilter.class)
 		.csrf().disable();
 		//.authenticationProvider(ezdiAuthenticationProvider())
 		

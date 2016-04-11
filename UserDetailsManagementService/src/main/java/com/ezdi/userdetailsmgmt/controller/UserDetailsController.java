@@ -4,6 +4,7 @@ import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,7 +20,7 @@ public class UserDetailsController {
 	private RandomMathUtil rnd;
 	
 	@RequestMapping(method=RequestMethod.POST, path="/add", consumes="application/json")
-	public String addUser(@RequestParam String jsonNewUser, HttpSession session){
+	public String addUser(@RequestBody String jsonNewUser, HttpSession session){
 		return "Session: "+session.getId()+"This is addUser() && You can see me! And you passed this --> "+jsonNewUser;
 	}
 	
