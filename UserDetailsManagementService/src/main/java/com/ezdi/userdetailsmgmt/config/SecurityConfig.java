@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 
 import com.ezdi.userdetailsmgmt.authprovider.impl.EzdiCustomUsernamePasswordAuthenticationProviderImpl;
 import com.ezdi.userdetailsmgmt.filter.EzdiCustomRoleReplacementFilter;
@@ -37,7 +38,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		.antMatchers("/user/me").permitAll()
 		.anyRequest().authenticated()
 		.and()
-		.addFilterBefore(ezdiCustomRoleFilter(), UsernamePasswordAuthenticationFilter.class);
+		//.addFilterBefore(ezdiCustomRoleFilter(), UsernamePasswordAuthenticationFilter.class);
+		.addFilterAfter(ezdiCustomRoleFilter(), SwitchUserFilter.class)
+		.csrf().disable();
 		//.authenticationProvider(ezdiAuthenticationProvider())
 		
 		//http.addFilterBefore(ezdiCustomFilter, BasicAuthenticationFilter.class);
@@ -65,15 +68,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configureGlobal(AuthenticationManagerBuilder auth)
 			throws Exception {
 		LOGGER.info("Inside configureGlobalSecurity()");
-		auth.authenticationProvider(ezdiAuthenticationProvider());
+		//auth.authenticationProvider(ezdiAuthenticationProvider());
 		LOGGER.info("Exiting configureGlobalSecurity()");
 	}
 	
+	/*
 	@Bean
 	public AuthenticationProvider ezdiAuthenticationProvider(){
 		return new EzdiCustomUsernamePasswordAuthenticationProviderImpl();
 	}
-
+	*/
+	
 	/*
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {

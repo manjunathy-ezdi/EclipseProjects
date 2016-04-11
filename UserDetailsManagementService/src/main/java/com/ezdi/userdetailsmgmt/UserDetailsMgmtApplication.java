@@ -15,6 +15,9 @@ import org.springframework.context.annotation.Configuration;
 @SpringBootApplication
 @ComponentScan(basePackages={"com.ezdi.userdetailsmgmt.*"})
 public class UserDetailsMgmtApplication {
+	
+	public static int MICROSERVICE_ID=10;
+	
 	private static final Logger LOGGER = Logger.getLogger(UserDetailsMgmtApplication.class);
 	public static void main(String[] args) {
 		LOGGER.info("Inside #$#UserDetailsMgmtApplication:main()");
