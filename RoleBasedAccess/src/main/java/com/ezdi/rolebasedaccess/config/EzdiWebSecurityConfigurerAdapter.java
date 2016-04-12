@@ -16,7 +16,7 @@ import com.ezdi.rolebasedaccess.filter.EzdiCustomRoleReplacementFilter;
 @EnableGlobalMethodSecurity(prePostEnabled=true)
 @EnableGlobalAuthentication
 @Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
-public class EzdiSecurityConfig extends WebSecurityConfigurerAdapter {
+public class EzdiWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
