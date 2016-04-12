@@ -10,10 +10,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 
 import com.ezdi.rolebasedaccess.rolehandler.RoleHandler;
 
+@Component
 public class EzdiCustomRoleReplacementFilter extends GenericFilterBean {
 
 	private boolean isRoleReplaced = false;
