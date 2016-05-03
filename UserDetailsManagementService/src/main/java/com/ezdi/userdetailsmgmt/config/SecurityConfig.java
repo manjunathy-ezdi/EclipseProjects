@@ -7,17 +7,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 
-import com.ezdi.userdetailsmgmt.authprovider.impl.EzdiCustomUsernamePasswordAuthenticationProviderImpl;
 import com.ezdi.userdetailsmgmt.filter.EzdiCustomRoleReplacementFilter;
 
 
@@ -37,17 +33,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		.antMatchers(HttpMethod.DELETE, "/user/user**").hasAuthority("ROLE_DELETE_PERMISSION")
 		.antMatchers(HttpMethod.GET,"/user/user**").hasAnyAuthority("ROLE_READ_PERMISSION")
 		.antMatchers("/user/me").permitAll()
-		.anyRequest().authenticated()
-		.and()
-		//.addFilterBefore(ezdiCustomRoleFilter(), UsernamePasswordAuthenticationFilter.class);
-		//.addFilterAfter(ezdiCustomRoleFilter(), SwitchUserFilter.class)
-		.addFilterBefore(ezdiCustomRoleFilter(), AnonymousAuthenticationFilter.class)
-		.csrf().disable();
+		.anyRequest().authenticated();
+		configureMeToo(http);
+		
 		//.authenticationProvider(ezdiAuthenticationProvider())
 		
 		//http.addFilterBefore(ezdiCustomFilter, BasicAuthenticationFilter.class);
 		//http.addFilterBefore(ezdiCustomFilter, UsernamePasswordAuthenticationFilter.class);
 		//http.addFilterAfter(ezdiCustomFilter, UsernamePasswordAuthenticationFilter.class);
+	}
+	
+	private void configureMeToo(HttpSecurity http) throws Exception{
+		http
+		//.and()
+		.addFilterBefore(ezdiCustomRoleFilter(), AnonymousAuthenticationFilter.class)
+		.csrf().disable();
 	}
 	
 	/*

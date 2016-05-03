@@ -21,18 +21,22 @@ public class UserDetailsController {
 	
 	@RequestMapping(method=RequestMethod.POST, path="/add", consumes="application/json")
 	public String addUser(@RequestBody String jsonNewUser, HttpSession session){
-		return "Session: "+session.getId()+"This is addUser() && You can see me! And you passed this --> "+jsonNewUser;
+		session.setAttribute("Hitesh", "Balar");
+		return "Session: "+session.getId()+" ;; This is addUser() && You can see me! And you passed this --> "+jsonNewUser;
 	}
 	
 	
 	@RequestMapping(method=RequestMethod.GET, path="/user")
 	public String getUser(@RequestParam String username, HttpSession session){
-		return "Session: "+session.getId()+"Congratulations!! You got as far as getUser()! And you passed this --> "+username;
+		session.setAttribute("ezDI", "ezCAC");
+		return "Session: "+session.getId()+" ;; Congratulations!! You got as far as getUser()! And you passed this --> "+username;
 	}	
 	
 	@RequestMapping(method=RequestMethod.DELETE, path="/user")
 	public String deleteUser(@RequestParam String username, HttpSession session){
-		return "Session: "+session.getId()+"You are at deleteUser()! And how dare you delete --> "+username;
+		String prevValue = (String)session.getAttribute("ezCDI");
+		session.setAttribute("ezDI", "ezCDI");
+		return "Session: "+session.getId()+" PREVAVLUE: "+prevValue+ " ;; You are at deleteUser()! And how dare you delete --> "+username;
 	}
 	
 	@RequestMapping(method=RequestMethod.POST, path="/edit")
