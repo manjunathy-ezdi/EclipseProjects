@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableAutoConfiguration
 @SpringBootApplication
-@ComponentScan(basePackages={"com.ezdi.dummy.*"})
+@ComponentScan(basePackages={"com.ezdi.*"})
 public class MyDummyMicroservice {
 	
 	private static final Logger LOGGER = Logger.getLogger(MyDummyMicroservice.class);
